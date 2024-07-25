@@ -1,0 +1,121 @@
+import java.util.Scanner;
+
+class Product {
+    int id;
+    String name;
+    int quantity;
+    double price;
+    Product left, right;
+
+    public Product(int id, String name, int quantity, double price) {
+        this.id = id;
+        this.name = name;
+        this.quantity = quantity;
+        this.price = price;
+        this.left = null;
+        this.right = null;
+    }
+}
+
+class Inventory {
+    private Product root;
+
+    void addProduct(int id, String name, int quantity, double price) {
+        root = insert(root, id, name, quantity, price);
+    }
+
+    Product search(int id) {
+        return search(root, id);
+    }
+
+    void updateQuantity(int id, int quantity) {
+        Product product = search(id);
+        if (product != null) {
+            product.quantity = quantity;
+        }
+    }
+
+    void generateLowStockReport(int threshold) {
+        System.out.println("Low-stock items (quantity <= " + threshold + "):");
+        generateReport(root, threshold);
+    }
+
+    private Product insert(Product node, int id, String name, int quantity, double price) {
+        if (node == null) {
+            return new Product(id, name, quantity, price);
+        }
+        if (id < node.id) {
+            node.left = insert(node.left, id, name, quantity, price);
+        } else {
+            node.right = insert(node.right, id, name, quantity, price);
+        }
+        return node;
+    }
+
+    private Product search(Product node, int id) {
+        if (node == null) {
+            return null;
+        }
+        if (node.id == id) {
+            return node;
+        }
+        return node.id > id ? search(node.left, id) : search(node.right, id);
+    }
+
+    private void generateReport(Product node, int threshold) {
+        if (node == null) {
+            return;
+        }
+        generateReport(node.left, threshold);
+        if (node.quantity <= threshold) {
+            System.out.println("ID: " + node.id + ", Name: " + node.name + ", Quantity: " + node.quantity + ", Price: " + node.price);
+        }
+        generateReport(node.right, threshold);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Inventory inventory = new Inventory();
+        Scanner scanner = new Scanner(System.in);
+        boolean exit = false;
+
+        while (!exit) {
+            System.out.println("\nInventory Management System:");
+            System.out.println("1. Add Product");
+            System.out.println("2. Search Product");
+            System.out.println("3. Update Product Quantity");
+            System.out.println("4. Generate Low Stock Report");
+            System.out.println("5. Exit");
+            System.out.print("Choose an option: ");
+            int choice = scanner.nextInt();
+
+            switch (choice) {
+                case 1:
+                    inventory.addProduct(scanner.nextInt(), scanner.next(), scanner.nextInt(), scanner.nextDouble());
+                    break;
+                case 2:
+                    Product product = inventory.search(scanner.nextInt());
+                    if (product != null) {
+                        System.out.println("Product found: " + product.id + ", " + product.name + ", " + product.quantity + ", " + product.price);
+                    } else {
+                        System.out.println("Product not found.");
+                    }
+                    break;
+                case 3:
+                    inventory.updateQuantity(scanner.nextInt(), scanner.nextInt());
+                    break;
+                case 4:
+                    inventory.generateLowStockReport(scanner.nextInt());
+                    break;
+                case 5:
+                    exit = true;
+                    break;
+                default:
+                    System.out.println("Invalid option. Please try again.");
+            }
+        }
+
+        scanner.close();
+    }
+}
